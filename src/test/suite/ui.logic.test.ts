@@ -16,9 +16,12 @@ suite('UI + logic', function () {
 
 		const allCommands = await vscode.commands.getCommands(true);
 		assert.ok(allCommands.includes('workbench.view.extension.robinSearch'));
+		assert.ok(allCommands.includes('robinSearch.openRobinSearch'));
 		assert.ok(allCommands.includes('robinSearch.runSearch'));
 		assert.ok(allCommands.includes('robinSearch.clearResults'));
 		assert.ok(allCommands.includes('robinSearch.backToResults'));
+		assert.ok(allCommands.includes('robinSearch.nextResult'));
+		assert.ok(allCommands.includes('robinSearch.previousResult'));
 
 		const wsFolder = vscode.workspace.workspaceFolders?.[0];
 		assert.ok(wsFolder);

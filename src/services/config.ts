@@ -7,7 +7,6 @@ export interface RobinSearchConfig {
 	previewMaxChars: number;
 	respectSearchExclude: boolean;
 	sidebarFileMaxLines: number;
-	hideAfterOpenInEditor: boolean;
 }
 
 export function getRobinSearchConfig(): RobinSearchConfig {
@@ -19,6 +18,5 @@ export function getRobinSearchConfig(): RobinSearchConfig {
 		previewMaxChars: config.get<number>('previewMaxChars', 240),
 		respectSearchExclude: config.get<boolean>('respectSearchExclude', true),
 		sidebarFileMaxLines: config.get<number>('sidebarFileMaxLines', 4000),
-		hideAfterOpenInEditor: config.get<boolean>('hideAfterOpenInEditor', true),
 	};
 }

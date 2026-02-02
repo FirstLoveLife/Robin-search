@@ -132,8 +132,17 @@ export class MatchTreeItem extends vscode.TreeItem {
 		if (targetUri) {
 			this.command = {
 				command: 'robinSearch.openMatchFromResults',
-				title: 'Open Match',
-				arguments: [{ targetUri: targetUri.toString(), line: match.line, col: match.col, runId }],
+				title: 'Open Match (Keep Side Bar)',
+				arguments: [
+					{
+						targetUri: targetUri.toString(),
+						rootName: set.rootName,
+						relativePath: match.relativePath,
+						line: match.line,
+						col: match.col,
+						runId,
+					},
+				],
 			};
 		}
 	}

@@ -46,7 +46,14 @@ suite('Extension integration', () => {
 			assert.strictEqual(before.document.uri.scheme, 'untitled');
 
 			const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
-			await vscode.commands.executeCommand('robinSearch.openMatchFromResults', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
+			await vscode.commands.executeCommand('robinSearch.openMatchFromResults', {
+				targetUri: targetUri.toString(),
+				rootName: firstSet.rootName,
+				relativePath: match.relativePath,
+				line: match.line,
+				col: match.col,
+				runId: runs[0].runId,
+			});
 			assert.strictEqual(api.mode.get(), 'results');
 
 			const apiNav = api.nav.getReturnTarget();
@@ -63,6 +70,18 @@ suite('Extension integration', () => {
 			const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
 			assert.ok(tab);
 			assert.strictEqual(tab.isPreview, false);
+
+			await vscode.commands.executeCommand('robinSearch.nextResult');
+			const activeAfterNext = vscode.window.activeTextEditor;
+			assert.ok(activeAfterNext);
+			assert.ok(activeAfterNext.document.uri.fsPath.endsWith(path.join('workspace', 'hello.txt')));
+			assert.strictEqual(activeAfterNext.selection.active.line, match.line - 1);
+
+			await vscode.commands.executeCommand('robinSearch.previousResult');
+			const activeAfterPrev = vscode.window.activeTextEditor;
+			assert.ok(activeAfterPrev);
+			assert.ok(activeAfterPrev.document.uri.fsPath.endsWith(path.join('workspace', 'hello.txt')));
+			assert.strictEqual(activeAfterPrev.selection.active.line, match.line - 1);
 
 			// Should not throw; best-effort focus back to Results.
 			await vscode.commands.executeCommand('robinSearch.backToResults');

@@ -15,14 +15,18 @@
     "onView:robinSearch.search",
     "onView:robinSearch.results",
     "onView:robinSearch.preview",
+    "onCommand:robinSearch.openRobinSearch",
     "onCommand:robinSearch.runSearch",
     "onCommand:robinSearch.clearResults",
     "onCommand:robinSearch.deleteRun",
     "onCommand:robinSearch.copyQuery",
     "onCommand:robinSearch.openMatch",
     "onCommand:robinSearch.openMatchFromResults",
+    "onCommand:robinSearch.openMatchHideSidebar",
     "onCommand:robinSearch.previewMatch",
-    "onCommand:robinSearch.backToResults"
+    "onCommand:robinSearch.backToResults",
+    "onCommand:robinSearch.nextResult",
+    "onCommand:robinSearch.previousResult"
   ],
   "contributes": {
     "languages": [
@@ -106,47 +110,96 @@
           "command": "robinSearch.deleteRun",
           "when": "view == robinSearch.results && viewItem == robinSearchRun",
           "group": "navigation"
+        },
+        {
+          "command": "robinSearch.openMatchHideSidebar",
+          "when": "view == robinSearch.results && viewItem == robinSearchMatch",
+          "group": "navigation"
         }
       ]
     },
     "commands": [
       {
+        "command": "robinSearch.openRobinSearch",
+        "title": "Robin Search: Open",
+        "category": "Robin Search"
+      },
+      {
         "command": "robinSearch.runSearch",
-        "title": "Robin Search: Run Search"
+        "title": "Run Search",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.clearResults",
-        "title": "Robin Search: Clear Results"
+        "title": "Clear Results",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.copyQuery",
-        "title": "Robin Search: Copy Query"
+        "title": "Copy Query",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.deleteRun",
-        "title": "Robin Search: Delete Search Run"
+        "title": "Delete Search Run",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.openMatch",
-        "title": "Robin Search: Open Match"
+        "title": "Open Match",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.openMatchFromResults",
-        "title": "Robin Search: Open Match"
+        "title": "Open Match (Keep Side Bar)",
+        "category": "Robin Search"
+      },
+      {
+        "command": "robinSearch.openMatchHideSidebar",
+        "title": "Open Match (Hide Side Bar)",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.previewMatch",
-        "title": "Robin Search: Open Match In Side Bar"
+        "title": "Open Match In Side Bar",
+        "category": "Robin Search"
       },
       {
         "command": "robinSearch.backToResults",
-        "title": "Robin Search: Back To Results"
+        "title": "Back To Results",
+        "category": "Robin Search"
+      },
+      {
+        "command": "robinSearch.nextResult",
+        "title": "Next Result",
+        "category": "Robin Search"
+      },
+      {
+        "command": "robinSearch.previousResult",
+        "title": "Previous Result",
+        "category": "Robin Search"
       }
     ],
     "keybindings": [
       {
+        "command": "robinSearch.openRobinSearch",
+        "key": "ctrl+alt+shift+f",
+        "mac": "cmd+alt+shift+f"
+      },
+      {
         "command": "robinSearch.backToResults",
-        "key": "ctrl+alt+shift+r"
+        "key": "ctrl+alt+shift+r",
+        "mac": "cmd+alt+shift+r"
+      },
+      {
+        "command": "robinSearch.nextResult",
+        "key": "ctrl+alt+shift+down",
+        "mac": "cmd+alt+shift+down"
+      },
+      {
+        "command": "robinSearch.previousResult",
+        "key": "ctrl+alt+shift+up",
+        "mac": "cmd+alt+shift+up"
       }
     ],
     "configuration": {
@@ -186,11 +239,6 @@
           "default": 4000,
           "minimum": 100,
           "description": "Max file lines to render in the Side Bar file viewer. Large files fall back to a window around the hit."
-        },
-        "robinSearch.hideAfterOpenInEditor": {
-          "type": "boolean",
-          "default": true,
-          "description": "After opening a match in the editor, hide the Side Bar (best-effort)."
         }
       }
     }
@@ -209,7 +257,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.30",
-    "@types/vscode": "^1.106.1",
+    "@types/vscode": "1.106.1",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.2.1",
     "mocha": "^10.3.0",
