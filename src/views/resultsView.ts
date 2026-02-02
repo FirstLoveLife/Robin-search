@@ -132,7 +132,7 @@ export class MatchTreeItem extends vscode.TreeItem {
 		if (targetUri) {
 			this.command = {
 				command: 'robinSearch.previewMatch',
-				title: 'Preview Match',
+				title: 'Open Match In Side Bar',
 				arguments: [{ targetUri: targetUri.toString(), line: match.line, col: match.col, runId }],
 			};
 		}

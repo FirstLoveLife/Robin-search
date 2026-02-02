@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getRobinSearchConfig } from '../services/config';
 
 type FromWebviewMessage =
 	| { type: 'ready' }
@@ -12,6 +13,7 @@ type ToWebviewMessage =
 			payload: {
 				title: string;
 				subtitle: string;
+				rangeLabel: string;
 				lines: Array<{ lineNo: number; text: string; isHit: boolean }>;
 				targetUri: string;
 				line: number;
@@ -61,20 +63,29 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
 
 		await this.postMessage({
 			type: 'init',
-			payload: { title: 'No selection', subtitle: 'Click a match in Results to preview here.' },
+			payload: { title: 'No file open', subtitle: 'Click a match in Results to open it here.' },
 		});
 	}
 
 	public async showMatch(args: { targetUri: string; line: number; col?: number }): Promise<void> {
 		this.current = args;
 
+		const config = getRobinSearchConfig();
 		const uri = vscode.Uri.parse(args.targetUri);
 		const doc = await vscode.workspace.openTextDocument(uri);
 
 		const hitLine0 = Math.max(args.line - 1, 0);
-		const contextLines = 3;
-		const start = Math.max(0, hitLine0 - contextLines);
-		const end = Math.min(doc.lineCount - 1, hitLine0 + contextLines);
+		const maxLines = Math.max(100, config.sidebarFileMaxLines);
+		let start = 0;
+		let end = Math.max(0, doc.lineCount - 1);
+		let truncated = false;
+		if (doc.lineCount > maxLines) {
+			truncated = true;
+			const half = Math.floor(maxLines / 2);
+			start = Math.max(0, hitLine0 - half);
+			start = Math.min(start, Math.max(0, doc.lineCount - maxLines));
+			end = Math.min(doc.lineCount - 1, start + maxLines - 1);
+		}
 
 		const lines: Array<{ lineNo: number; text: string; isHit: boolean }> = [];
 		for (let i = start; i <= end; i++) {
@@ -91,6 +102,7 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
 			payload: {
 				title: relLabel(uri),
 				subtitle: `line ${args.line}${args.col ? `, col ${args.col}` : ''}`,
+				rangeLabel: truncated ? `Showing ${start + 1}-${end + 1} of ${doc.lineCount} lines` : `${doc.lineCount} lines`,
 				lines,
 				targetUri: args.targetUri,
 				line: args.line,
@@ -145,7 +157,7 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Robin Search Preview</title>
+  <title>Robin Search File</title>
   <style>
     :root { color-scheme: light dark; }
     * { box-sizing: border-box; }
@@ -159,6 +171,7 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
     }
     .title { font-weight: 700; margin: 0 0 4px; }
     .subtitle { margin: 0 0 10px; color: var(--vscode-descriptionForeground); font-size: 12px; }
+    .range { margin: -6px 0 10px; color: var(--vscode-descriptionForeground); font-size: 11px; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
     button {
       border-radius: 4px;
@@ -182,7 +195,7 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
       font-family: var(--vscode-editor-font-family);
       font-size: var(--vscode-editor-font-size);
       line-height: 1.55;
-      tab-size: 2;
+      tab-size: 8;
     }
     .line { display: grid; grid-template-columns: 48px 1fr; gap: 10px; }
     .ln { color: var(--vscode-descriptionForeground); text-align: right; user-select: none; }
@@ -192,9 +205,10 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
 <body>
   <div class="title" id="title"></div>
   <div class="subtitle" id="subtitle"></div>
+  <div class="range" id="range"></div>
   <div class="actions">
-    <button id="openBtn" class="primary" type="button">Open in Editor</button>
     <button id="backBtn" class="ghost" type="button">Back to Results</button>
+    <button id="openBtn" class="primary" type="button">Open in Editor</button>
   </div>
   <pre id="code"></pre>
 
@@ -205,13 +219,21 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
     function render(payload) {
       el('title').textContent = payload.title || '';
       el('subtitle').textContent = payload.subtitle || '';
+      el('range').textContent = payload.rangeLabel || '';
       const out = [];
       for (const line of (payload.lines || [])) {
         const cls = line.isHit ? 'hit' : '';
         const text = line.text ?? '';
-        out.push('<div class="line"><div class="ln">' + line.lineNo + '</div><div class="' + cls + '">' + escapeHtml(text) + '</div></div>');
+        const id = line.isHit ? 'hit-line' : '';
+        out.push('<div class="line" id="' + id + '"><div class="ln">' + line.lineNo + '</div><div class="' + cls + '">' + escapeHtml(text) + '</div></div>');
       }
       el('code').innerHTML = out.join('');
+
+      const hit = document.getElementById('hit-line');
+      if (hit) {
+        // Wait for layout before scrolling.
+        requestAnimationFrame(() => hit.scrollIntoView({ block: 'center' }));
+      }
     }
 
     function escapeHtml(text) {
@@ -239,4 +261,3 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
 </html>`;
 	}
 }
-

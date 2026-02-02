@@ -6,6 +6,7 @@ export interface RobinSearchConfig {
 	maxFileSizeKB: number;
 	previewMaxChars: number;
 	respectSearchExclude: boolean;
+	sidebarFileMaxLines: number;
 }
 
 export function getRobinSearchConfig(): RobinSearchConfig {
@@ -16,5 +17,6 @@ export function getRobinSearchConfig(): RobinSearchConfig {
 		maxFileSizeKB: config.get<number>('maxFileSizeKB', 2048),
 		previewMaxChars: config.get<number>('previewMaxChars', 240),
 		respectSearchExclude: config.get<boolean>('respectSearchExclude', true),
+		sidebarFileMaxLines: config.get<number>('sidebarFileMaxLines', 4000),
 	};
 }

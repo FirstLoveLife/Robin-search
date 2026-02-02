@@ -4,6 +4,7 @@ import { SearchEngine, SearchEngineProgress } from './services/searchEngine';
 import { SearchRunService, RunSearchRequest } from './services/searchRunService';
 import { SearchUiState } from './services/searchUiState';
 import { NavigationState } from './services/navigationState';
+import { ViewModeState } from './services/viewModeState';
 import { ResultsViewProvider, RunTreeItem } from './views/resultsView';
 import { PreviewWebviewViewProvider } from './views/previewView';
 import { SearchWebviewViewProvider } from './views/searchView';
@@ -12,6 +13,7 @@ export interface RobinSearchApi {
 	results: ResultsStore;
 	uiState: SearchUiState;
 	nav: NavigationState;
+	mode: ViewModeState;
 }
 
 function normalizeRunIdFromArgs(args: unknown): string | undefined {
@@ -79,6 +81,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 	const results = new ResultsStore(context);
 	await results.load();
 	const nav = new NavigationState();
+	const mode = new ViewModeState();
+	// Default to Results mode so the `Results` view is visible and the file viewer is hidden.
+	await mode.set('results');
 
 	const searchEngine = new SearchEngine();
 	const searchRunner = new SearchRunService(searchEngine, output);
@@ -211,7 +216,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 				throw err;
 			}
 
-			const editor = await vscode.window.showTextDocument(doc, { preview: true, preserveFocus: !!args.preserveFocus });
+			const editor = await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: !!args.preserveFocus });
 
 			const line = Math.max(args.line - 1, 0);
 			const col = Math.max((args.col ?? 1) - 1, 0);
@@ -239,6 +244,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 			}
 			nav.setReturnTarget({ viewId: 'robinSearch.results', runId: lastSelectedRunId });
 
+			// Switch the Side Bar into "file" mode so the file viewer replaces the Results view.
+			await mode.set('file');
+
 			await previewView.showMatch({ targetUri: args.targetUri, line: args.line, col: args.col });
 
 			// Best-effort focus Preview view.
@@ -263,6 +271,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 	context.subscriptions.push(
 		vscode.commands.registerCommand('robinSearch.backToResults', async () => {
 			const target = nav.getReturnTarget();
+			await mode.set('results');
 			await vscode.commands.executeCommand('workbench.view.extension.robinSearch');
 			if (target?.viewId === 'robinSearch.results') {
 				const runId = target.runId;
@@ -290,7 +299,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 		}),
 	);
 
-	return { results, uiState, nav };
+	return { results, uiState, nav, mode };
 }
 
 export function deactivate() {}

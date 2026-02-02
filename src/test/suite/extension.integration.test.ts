@@ -13,6 +13,7 @@ suite('Extension integration', () => {
 			const api = (await ext.activate()) as RobinSearchApi;
 
 			await api.results.clear();
+			assert.strictEqual(api.mode.get(), 'results');
 
 			const wsFolder = vscode.workspace.workspaceFolders?.[0];
 			assert.ok(wsFolder);
@@ -46,6 +47,7 @@ suite('Extension integration', () => {
 
 			const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
 			await vscode.commands.executeCommand('robinSearch.previewMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
+			assert.strictEqual(api.mode.get(), 'file');
 
 			const apiNav = api.nav.getReturnTarget();
 			assert.ok(apiNav);
@@ -58,6 +60,7 @@ suite('Extension integration', () => {
 
 			// Should not throw; best-effort focus back to Results.
 			await vscode.commands.executeCommand('robinSearch.backToResults');
+			assert.strictEqual(api.mode.get(), 'results');
 		});
 	});
 });

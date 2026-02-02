@@ -63,12 +63,14 @@
         },
         {
           "id": "robinSearch.results",
-          "name": "Results"
+          "name": "Results",
+          "when": "robinSearch.mode != file"
         },
         {
           "id": "robinSearch.preview",
-          "name": "Preview",
-          "type": "webview"
+          "name": "File",
+          "type": "webview",
+          "when": "robinSearch.mode == file"
         }
       ]
     },
@@ -79,11 +81,11 @@
       },
       {
         "view": "robinSearch.results",
-        "contents": "Browse recent search runs and click a match to preview it."
+        "contents": "Browse recent search runs and click a match to open the file in the Side Bar."
       },
       {
         "view": "robinSearch.preview",
-        "contents": "Click a match in `Results` to preview it here."
+        "contents": "Click a match in `Results` to open the file here."
       }
     ],
     "menus": {
@@ -134,7 +136,7 @@
       },
       {
         "command": "robinSearch.previewMatch",
-        "title": "Robin Search: Preview Match"
+        "title": "Robin Search: Open Match In Side Bar"
       },
       {
         "command": "robinSearch.backToResults",
@@ -178,6 +180,12 @@
           "type": "boolean",
           "default": true,
           "description": "Respect VS Code ignore/exclude settings (best-effort)."
+        },
+        "robinSearch.sidebarFileMaxLines": {
+          "type": "number",
+          "default": 4000,
+          "minimum": 100,
+          "description": "Max file lines to render in the Side Bar file viewer. Large files fall back to a window around the hit."
         }
       }
     }

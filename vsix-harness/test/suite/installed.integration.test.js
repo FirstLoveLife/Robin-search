@@ -19,6 +19,7 @@ suite('VSIX installed extension', function () {
 		assert.ok(wsFolder);
 
 		await api.results.clear();
+		assert.strictEqual(api.mode.get(), 'results');
 
 		await vscode.commands.executeCommand('robinSearch.runSearch', {
 			pattern: 'hello',
@@ -49,10 +50,12 @@ suite('VSIX installed extension', function () {
 
 		const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
 		await vscode.commands.executeCommand('robinSearch.previewMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
+		assert.strictEqual(api.mode.get(), 'file');
 		const active = vscode.window.activeTextEditor;
 		assert.ok(active);
 		assert.strictEqual(active.document.uri.scheme, 'untitled');
 
 		await vscode.commands.executeCommand('robinSearch.backToResults');
+		assert.strictEqual(api.mode.get(), 'results');
 	});
 });
