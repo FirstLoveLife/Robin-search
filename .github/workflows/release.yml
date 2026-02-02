@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install system deps (xvfb)
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Tests (dev extension)
+        run: |
+          set -euxo pipefail
+          xvfb-run -a npm test
+
+      - name: Package VSIX
+        run: |
+          set -euxo pipefail
+          npm run package:vsix
+
+      - name: Create source archives
+        run: |
+          set -euxo pipefail
+          TAG="${{ github.event.release.tag_name }}"
+          NAME="robin-search-${TAG}"
+
+          git archive --format=zip --output "${NAME}.zip" HEAD
+          git archive --format=tar --output "${NAME}.tar" HEAD
+          gzip -f "${NAME}.tar"
+
+      - name: Upload release assets (VSIX + source)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            robin-search.vsix
+            robin-search-${{ github.event.release.tag_name }}.zip
+            robin-search-${{ github.event.release.tag_name }}.tar.gz
+
