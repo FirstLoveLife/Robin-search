@@ -23,6 +23,12 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Install system deps (xvfb)
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
       - name: Unit/integration tests (dev extension)
         run: |
           set -euxo pipefail
@@ -48,4 +54,3 @@ jobs:
             test.log
             vsix-package.log
             vsix-test.log
-
