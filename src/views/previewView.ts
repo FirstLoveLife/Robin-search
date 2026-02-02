@@ -126,7 +126,7 @@ export class PreviewWebviewViewProvider implements vscode.WebviewViewProvider, v
 			if (!this.current) {
 				return;
 			}
-			await vscode.commands.executeCommand('robinSearch.openMatch', { ...this.current, preserveFocus: false });
+			await vscode.commands.executeCommand('robinSearch.openMatchFromResults', { ...this.current });
 			return;
 		}
 	}

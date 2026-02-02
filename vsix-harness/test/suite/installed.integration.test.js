@@ -49,11 +49,17 @@ suite('VSIX installed extension', function () {
 		assert.strictEqual(before.document.uri.scheme, 'untitled');
 
 		const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
-		await vscode.commands.executeCommand('robinSearch.previewMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
-		assert.strictEqual(api.mode.get(), 'file');
+		await vscode.commands.executeCommand('robinSearch.openMatchFromResults', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
+		assert.strictEqual(api.mode.get(), 'results');
 		const active = vscode.window.activeTextEditor;
 		assert.ok(active);
-		assert.strictEqual(active.document.uri.scheme, 'untitled');
+		assert.strictEqual(active.document.uri.scheme, 'file');
+		assert.ok(active.document.uri.fsPath.endsWith('hello.txt'));
+		assert.strictEqual(active.selection.active.line, match.line - 1);
+
+		const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
+		assert.ok(tab);
+		assert.strictEqual(tab.isPreview, false);
 
 		await vscode.commands.executeCommand('robinSearch.backToResults');
 		assert.strictEqual(api.mode.get(), 'results');

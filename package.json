@@ -132,7 +132,7 @@
       },
       {
         "command": "robinSearch.openMatchFromResults",
-        "title": "Robin Search: Open Match (Keep Focus)"
+        "title": "Robin Search: Open Match"
       },
       {
         "command": "robinSearch.previewMatch",
@@ -186,6 +186,11 @@
           "default": 4000,
           "minimum": 100,
           "description": "Max file lines to render in the Side Bar file viewer. Large files fall back to a window around the hit."
+        },
+        "robinSearch.hideAfterOpenInEditor": {
+          "type": "boolean",
+          "default": true,
+          "description": "After opening a match in the editor, hide the Side Bar (best-effort)."
         }
       }
     }

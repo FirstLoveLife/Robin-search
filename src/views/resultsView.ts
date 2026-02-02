@@ -131,8 +131,8 @@ export class MatchTreeItem extends vscode.TreeItem {
 		const targetUri = resolveMatchUri(set.rootName, match.relativePath);
 		if (targetUri) {
 			this.command = {
-				command: 'robinSearch.previewMatch',
-				title: 'Open Match In Side Bar',
+				command: 'robinSearch.openMatchFromResults',
+				title: 'Open Match',
 				arguments: [{ targetUri: targetUri.toString(), line: match.line, col: match.col, runId }],
 			};
 		}

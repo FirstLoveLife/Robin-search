@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ResultsStore, SearchRun } from './services/resultsStore';
 import { SearchEngine, SearchEngineProgress } from './services/searchEngine';
 import { SearchRunService, RunSearchRequest } from './services/searchRunService';
+import { getRobinSearchConfig } from './services/config';
 import { SearchUiState } from './services/searchUiState';
 import { NavigationState } from './services/navigationState';
 import { ViewModeState } from './services/viewModeState';
@@ -207,6 +208,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 		vscode.commands.registerCommand(
 			'robinSearch.openMatch',
 			async (args: { targetUri: string; line: number; col?: number; preserveFocus?: boolean }) => {
+			if (!args || typeof args.targetUri !== 'string' || typeof args.line !== 'number') {
+				vscode.window.showInformationMessage('Robin Search: click a match in Results to open it.');
+				return;
+			}
 			const uri = vscode.Uri.parse(args.targetUri);
 			let doc: vscode.TextDocument;
 			try {
@@ -229,16 +234,36 @@ export async function activate(context: vscode.ExtensionContext): Promise<RobinS
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('robinSearch.openMatchFromResults', async (args: { targetUri: string; line: number; col?: number; runId?: string }) => {
+			if (!args || typeof args.targetUri !== 'string' || typeof args.line !== 'number') {
+				vscode.window.showInformationMessage('Robin Search: click a match in Results to open it.');
+				return;
+			}
 			if (typeof args?.runId === 'string') {
 				lastSelectedRunId = args.runId;
 			}
 			nav.setReturnTarget({ viewId: 'robinSearch.results', runId: lastSelectedRunId });
-			await vscode.commands.executeCommand('robinSearch.openMatch', { targetUri: args.targetUri, line: args.line, col: args.col, preserveFocus: true });
+			// Ensure next time Robin Search is opened it starts in Results mode.
+			await mode.set('results');
+
+			await vscode.commands.executeCommand('robinSearch.openMatch', { targetUri: args.targetUri, line: args.line, col: args.col, preserveFocus: false });
+
+			const config = getRobinSearchConfig();
+			if (config.hideAfterOpenInEditor) {
+				try {
+					await vscode.commands.executeCommand('workbench.action.closeSidebar');
+				} catch {
+					// ignore
+				}
+			}
 		}),
 	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('robinSearch.previewMatch', async (args: { targetUri: string; line: number; col?: number; runId?: string }) => {
+			if (!args || typeof args.targetUri !== 'string' || typeof args.line !== 'number') {
+				vscode.window.showInformationMessage('Robin Search: click a match in Results to open it.');
+				return;
+			}
 			if (typeof args?.runId === 'string') {
 				lastSelectedRunId = args.runId;
 			}
