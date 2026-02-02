@@ -14,10 +14,15 @@
   "activationEvents": [
     "onView:robinSearch.search",
     "onView:robinSearch.results",
+    "onView:robinSearch.preview",
     "onCommand:robinSearch.runSearch",
     "onCommand:robinSearch.clearResults",
     "onCommand:robinSearch.deleteRun",
-    "onCommand:robinSearch.copyQuery"
+    "onCommand:robinSearch.copyQuery",
+    "onCommand:robinSearch.openMatch",
+    "onCommand:robinSearch.openMatchFromResults",
+    "onCommand:robinSearch.previewMatch",
+    "onCommand:robinSearch.backToResults"
   ],
   "contributes": {
     "languages": [
@@ -59,6 +64,11 @@
         {
           "id": "robinSearch.results",
           "name": "Results"
+        },
+        {
+          "id": "robinSearch.preview",
+          "name": "Preview",
+          "type": "webview"
         }
       ]
     },
@@ -69,7 +79,11 @@
       },
       {
         "view": "robinSearch.results",
-        "contents": "Browse recent search runs and click a match to open the file."
+        "contents": "Browse recent search runs and click a match to preview it."
+      },
+      {
+        "view": "robinSearch.preview",
+        "contents": "Click a match in `Results` to preview it here."
       }
     ],
     "menus": {
@@ -109,6 +123,28 @@
       {
         "command": "robinSearch.deleteRun",
         "title": "Robin Search: Delete Search Run"
+      },
+      {
+        "command": "robinSearch.openMatch",
+        "title": "Robin Search: Open Match"
+      },
+      {
+        "command": "robinSearch.openMatchFromResults",
+        "title": "Robin Search: Open Match (Keep Focus)"
+      },
+      {
+        "command": "robinSearch.previewMatch",
+        "title": "Robin Search: Preview Match"
+      },
+      {
+        "command": "robinSearch.backToResults",
+        "title": "Robin Search: Back To Results"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "robinSearch.backToResults",
+        "key": "ctrl+alt+shift+r"
       }
     ],
     "configuration": {

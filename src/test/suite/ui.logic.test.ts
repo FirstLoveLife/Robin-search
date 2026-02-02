@@ -12,11 +12,13 @@ suite('UI + logic', function () {
 		const api = (await ext.activate()) as RobinSearchApi;
 
 		await api.results.clear();
+		api.nav.clear();
 
 		const allCommands = await vscode.commands.getCommands(true);
 		assert.ok(allCommands.includes('workbench.view.extension.robinSearch'));
 		assert.ok(allCommands.includes('robinSearch.runSearch'));
 		assert.ok(allCommands.includes('robinSearch.clearResults'));
+		assert.ok(allCommands.includes('robinSearch.backToResults'));
 
 		const wsFolder = vscode.workspace.workspaceFolders?.[0];
 		assert.ok(wsFolder);
@@ -34,6 +36,7 @@ suite('UI + logic', function () {
 
 		const runs = api.results.list();
 		assert.ok(runs.length >= 1);
+		assert.strictEqual(api.nav.getReturnTarget(), undefined);
 
 		const provider = new ResultsViewProvider(api.results);
 		const root = (await Promise.resolve(provider.getChildren(undefined))) as any[];

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ResultsStore, SearchMatch, SearchRun, SearchRunSet } from '../services/resultsStore';
 
-type ResultsTreeElement = RunTreeItem | SetTreeItem | MatchTreeItem;
+export type ResultsTreeElement = RunTreeItem | SetTreeItem | MatchTreeItem;
 
 function formatTime(timestampMs: number): string {
 	const d = new Date(timestampMs);
@@ -69,7 +69,7 @@ export class ResultsViewProvider implements vscode.TreeDataProvider<ResultsTreeE
 	}
 }
 
-class RunTreeItem extends vscode.TreeItem {
+export class RunTreeItem extends vscode.TreeItem {
 	constructor(public readonly run: SearchRun) {
 		const time = formatTime(run.timestampMs);
 		const mode = formatMode(run);
@@ -99,7 +99,7 @@ class RunTreeItem extends vscode.TreeItem {
 	}
 }
 
-class SetTreeItem extends vscode.TreeItem {
+export class SetTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly runId: string,
 		public readonly run: SearchRun,
@@ -114,7 +114,7 @@ class SetTreeItem extends vscode.TreeItem {
 	}
 }
 
-class MatchTreeItem extends vscode.TreeItem {
+export class MatchTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly runId: string,
 		public readonly run: SearchRun,
@@ -123,6 +123,7 @@ class MatchTreeItem extends vscode.TreeItem {
 	) {
 		const col = match.col ?? '';
 		super(`${match.relativePath}:${match.line}:${col}`, vscode.TreeItemCollapsibleState.None);
+		this.id = `${runId}::${set.rootName}::${match.relativePath}::${match.line}::${col}`;
 		this.contextValue = 'robinSearchMatch';
 		this.iconPath = new vscode.ThemeIcon('file');
 		this.description = match.preview;
@@ -130,9 +131,9 @@ class MatchTreeItem extends vscode.TreeItem {
 		const targetUri = resolveMatchUri(set.rootName, match.relativePath);
 		if (targetUri) {
 			this.command = {
-				command: 'robinSearch.openMatch',
-				title: 'Open Match',
-				arguments: [{ targetUri: targetUri.toString(), line: match.line, col: match.col }],
+				command: 'robinSearch.previewMatch',
+				title: 'Preview Match',
+				arguments: [{ targetUri: targetUri.toString(), line: match.line, col: match.col, runId }],
 			};
 		}
 	}

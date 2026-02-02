@@ -1,5 +1,4 @@
 const assert = require('assert');
-const path = require('path');
 const vscode = require('vscode');
 
 suite('VSIX installed extension', function () {
@@ -13,6 +12,7 @@ suite('VSIX installed extension', function () {
 		const commands = await vscode.commands.getCommands(true);
 		assert.ok(commands.includes('robinSearch.runSearch'));
 		assert.ok(commands.includes('robinSearch.clearResults'));
+		assert.ok(commands.includes('robinSearch.backToResults'));
 		assert.ok(commands.includes('workbench.view.extension.robinSearch'));
 
 		const wsFolder = vscode.workspace.workspaceFolders?.[0];
@@ -41,12 +41,18 @@ suite('VSIX installed extension', function () {
 		assert.ok(match);
 		assert.strictEqual(match.line, 1);
 
+		const untitled = await vscode.workspace.openTextDocument({ content: 'keep editor intact' });
+		await vscode.window.showTextDocument(untitled, { preview: false });
+		const before = vscode.window.activeTextEditor;
+		assert.ok(before);
+		assert.strictEqual(before.document.uri.scheme, 'untitled');
+
 		const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
-		await vscode.commands.executeCommand('robinSearch.openMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col });
+		await vscode.commands.executeCommand('robinSearch.previewMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
 		const active = vscode.window.activeTextEditor;
 		assert.ok(active);
-		assert.strictEqual(active.document.uri.fsPath, path.join(wsFolder.uri.fsPath, 'hello.txt'));
-		assert.strictEqual(active.selection.active.line, 0);
-		assert.strictEqual(active.selection.active.character, 0);
+		assert.strictEqual(active.document.uri.scheme, 'untitled');
+
+		await vscode.commands.executeCommand('robinSearch.backToResults');
 	});
 });

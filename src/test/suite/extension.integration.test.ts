@@ -38,14 +38,26 @@ suite('Extension integration', () => {
 			assert.ok(match);
 			assert.strictEqual(match.line, 1);
 
+			const untitled = await vscode.workspace.openTextDocument({ content: 'keep editor intact' });
+			await vscode.window.showTextDocument(untitled, { preview: false });
+			const before = vscode.window.activeTextEditor;
+			assert.ok(before);
+			assert.strictEqual(before.document.uri.scheme, 'untitled');
+
 			const targetUri = vscode.Uri.joinPath(wsFolder.uri, match.relativePath);
-			await vscode.commands.executeCommand('robinSearch.openMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col });
+			await vscode.commands.executeCommand('robinSearch.previewMatch', { targetUri: targetUri.toString(), line: match.line, col: match.col, runId: runs[0].runId });
+
+			const apiNav = api.nav.getReturnTarget();
+			assert.ok(apiNav);
+			assert.strictEqual(apiNav.viewId, 'robinSearch.results');
+			assert.strictEqual(apiNav.runId, runs[0].runId);
 
 			const active = vscode.window.activeTextEditor;
 			assert.ok(active);
-			assert.strictEqual(active.document.uri.fsPath, path.join(wsFolder.uri.fsPath, 'hello.txt'));
-			assert.strictEqual(active.selection.active.line, 0);
-			assert.strictEqual(active.selection.active.character, 0);
+			assert.strictEqual(active.document.uri.scheme, 'untitled');
+
+			// Should not throw; best-effort focus back to Results.
+			await vscode.commands.executeCommand('robinSearch.backToResults');
+		});
 	});
-});
 });
