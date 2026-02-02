@@ -1,16 +1,22 @@
 # Robin Search
 
+Source Insight-style **appendable search results**, built for VS Code.
+
+If you like the Source Insight workflow where you keep appending multiple search runs into a single “evidence pool” and then jump through matches quickly, Robin Search brings that experience to the VS Code Side Bar.
+
 Robin Search is a VS Code extension that provides a **self-contained** search workflow in the Side Bar:
 
-- Run searches directly in the `Robin Search` views
-- Store results in extension storage (no need to create/open external files)
-- Browse runs/matches in the `Results` view and jump to the editor
+- **Appendable results**: every search is kept as a new run (nothing is overwritten until you clear)
+- **Fast jump + keyboard navigation**: open matches, go back, and jump next/previous result
+- **Self-contained**: results are stored in extension storage (no external files required)
+- **Two open modes**: keep the Side Bar open, or hide it after jumping to the editor
 
 ## Usage
 
 1. Open Activity Bar → `Robin Search`
 2. In `Search`, enter a pattern and press `Enter` (or click `Run Search`)
 3. Expand `Results` and click a match to jump to the file at `line/col`
+4. Run more searches — each one becomes a new run in `Results` (append-style history)
 
 ### Two open modes (default: keep Side Bar)
 
@@ -25,10 +31,10 @@ Robin Search is a VS Code extension that provides a **self-contained** search wo
 
 You can change these defaults in VS Code `Keyboard Shortcuts`.
 
-- Open Robin Search：`Ctrl+Alt+Shift+F`（macOS：`Cmd+Alt+Shift+F`）
-- Back to Results：`Ctrl+Alt+Shift+R`（macOS：`Cmd+Alt+Shift+R`）
-- Next Result：`Ctrl+Alt+Shift+Down`（macOS：`Cmd+Alt+Shift+Down`）
-- Previous Result：`Ctrl+Alt+Shift+Up`（macOS：`Cmd+Alt+Shift+Up`）
+- Open Robin Search: `Ctrl+Alt+Shift+F` (macOS: `Cmd+Alt+Shift+F`)
+- Back to Results: `Ctrl+Alt+Shift+R` (macOS: `Cmd+Alt+Shift+R`)
+- Next Result: `Ctrl+Alt+Shift+Down` (macOS: `Cmd+Alt+Shift+Down`)
+- Previous Result: `Ctrl+Alt+Shift+Up` (macOS: `Cmd+Alt+Shift+Up`)
 
 `Next/Previous Result` navigates matches from the most recent search run (wrap-around).
 
