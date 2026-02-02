@@ -1,0 +1,16 @@
+{
+  "name": "robin-search-vsix-harness",
+  "displayName": "Robin-search VSIX Harness",
+  "description": "VS Code test harness for validating robin-search.vsix installation.",
+  "version": "0.0.0",
+  "private": true,
+  "publisher": "firstlove",
+  "engines": {
+    "vscode": "^1.108.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "*"
+  ]
+}
+

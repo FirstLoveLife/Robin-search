@@ -1,0 +1,13 @@
+.vscode-test/**
+.vscode/**
+.github/**
+src/**
+*.log
+**/*.ts
+tsconfig.json
+Robin-search.md
+Robin-search-ui.md
+out/test/**
+vsix-harness/**
+scripts/**
+.gitignore

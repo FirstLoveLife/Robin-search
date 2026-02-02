@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ASR",
+  "scopeName": "text.asr",
+  "patterns": [
+    {
+      "name": "markup.heading.asr",
+      "match": "^##\\s.*$"
+    },
+    {
+      "name": "comment.line.number-sign.asr",
+      "match": "^#(?!#).*$"
+    },
+    {
+      "name": "punctuation.separator.asr",
+      "match": "^--\\s*$"
+    },
+    {
+      "name": "meta.matchline.asr",
+      "match": "^(.+?):(\\d+):(\\d*):\\s.*$",
+      "captures": {
+        "1": { "name": "string.unquoted.path.asr" },
+        "2": { "name": "constant.numeric.line.asr" },
+        "3": { "name": "constant.numeric.column.asr" }
+      }
+    }
+  ]
+}

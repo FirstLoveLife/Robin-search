@@ -1,0 +1,169 @@
+{
+  "name": "robin-search",
+  "displayName": "Robin-search",
+  "description": "Self-contained Side Bar search results for VS Code.",
+  "version": "0.0.1",
+  "publisher": "firstlove",
+  "engines": {
+    "vscode": "^1.108.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onView:robinSearch.search",
+    "onView:robinSearch.results",
+    "onCommand:robinSearch.runSearch",
+    "onCommand:robinSearch.clearResults",
+    "onCommand:robinSearch.deleteRun",
+    "onCommand:robinSearch.copyQuery"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "asr",
+        "aliases": [
+          "ASR",
+          "Robin Search Results"
+        ],
+        "extensions": [
+          ".asr"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "asr",
+        "scopeName": "text.asr",
+        "path": "./syntaxes/asr.tmLanguage.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "robinSearch",
+          "title": "Robin Search",
+          "icon": "media/robin-search.svg"
+        }
+      ]
+    },
+    "views": {
+      "robinSearch": [
+        {
+          "id": "robinSearch.search",
+          "name": "Search",
+          "type": "webview"
+        },
+        {
+          "id": "robinSearch.results",
+          "name": "Results"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "robinSearch.search",
+        "contents": "Run searches here. Results are stored inside the extension and shown in the `Results` view."
+      },
+      {
+        "view": "robinSearch.results",
+        "contents": "Browse recent search runs and click a match to open the file."
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "robinSearch.clearResults",
+          "when": "view == robinSearch.results",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "robinSearch.copyQuery",
+          "when": "view == robinSearch.results && viewItem == robinSearchRun",
+          "group": "navigation"
+        },
+        {
+          "command": "robinSearch.deleteRun",
+          "when": "view == robinSearch.results && viewItem == robinSearchRun",
+          "group": "navigation"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "robinSearch.runSearch",
+        "title": "Robin Search: Run Search"
+      },
+      {
+        "command": "robinSearch.clearResults",
+        "title": "Robin Search: Clear Results"
+      },
+      {
+        "command": "robinSearch.copyQuery",
+        "title": "Robin Search: Copy Query"
+      },
+      {
+        "command": "robinSearch.deleteRun",
+        "title": "Robin Search: Delete Search Run"
+      }
+    ],
+    "configuration": {
+      "title": "Robin-search",
+      "properties": {
+        "robinSearch.maxResults": {
+          "type": "number",
+          "default": 20000,
+          "minimum": 1,
+          "description": "Stop after collecting this many matches in a single search."
+        },
+        "robinSearch.maxMatchesPerFile": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 1,
+          "description": "Limit matches collected per file."
+        },
+        "robinSearch.maxFileSizeKB": {
+          "type": "number",
+          "default": 2048,
+          "minimum": 1,
+          "description": "Skip files bigger than this size (best-effort)."
+        },
+        "robinSearch.previewMaxChars": {
+          "type": "number",
+          "default": 240,
+          "minimum": 10,
+          "description": "Max characters of preview text in each match line."
+        },
+        "robinSearch.respectSearchExclude": {
+          "type": "boolean",
+          "default": true,
+          "description": "Respect VS Code ignore/exclude settings (best-effort)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node ./scripts/clean-out.js && tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package:vsix": "npm run compile && npx @vscode/vsce package --out robin-search.vsix",
+    "test:vsix": "npm run package:vsix && node ./scripts/test-vsix.js"
+  },
+  "dependencies": {
+    "@vscode/ripgrep": "^1.17.0"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.1",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.30",
+    "@types/vscode": "^1.108.1",
+    "@vscode/test-electron": "^2.5.2",
+    "mocha": "^10.3.0",
+    "typescript": "^5.4.5"
+  }
+}

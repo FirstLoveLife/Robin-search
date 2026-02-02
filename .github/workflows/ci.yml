@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Unit/integration tests (dev extension)
+        run: |
+          set -euxo pipefail
+          xvfb-run -a npm test |& tee test.log
+
+      - name: VSIX package
+        run: |
+          set -euxo pipefail
+          npm run package:vsix |& tee vsix-package.log
+
+      - name: VSIX installed smoke test
+        run: |
+          set -euxo pipefail
+          xvfb-run -a npm run test:vsix |& tee vsix-test.log
+
+      - name: Upload artifacts (vsix + logs)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: robin-search-artifacts
+          path: |
+            robin-search.vsix
+            test.log
+            vsix-package.log
+            vsix-test.log
+
