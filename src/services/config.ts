@@ -10,6 +10,7 @@ export interface RobinSearchConfig {
 	showExcludeInput: boolean;
 	showScopeInfo: boolean;
 	showIncludesInput: boolean;
+	showResultsScopeGroups: boolean;
 }
 
 export function getRobinSearchConfig(): RobinSearchConfig {
@@ -24,5 +25,6 @@ export function getRobinSearchConfig(): RobinSearchConfig {
 		showExcludeInput: config.get<boolean>('showExcludeInput', false),
 		showScopeInfo: config.get<boolean>('showScopeInfo', false),
 		showIncludesInput: config.get<boolean>('showIncludesInput', false),
+		showResultsScopeGroups: config.get<boolean>('showResultsScopeGroups', false),
 	};
 }

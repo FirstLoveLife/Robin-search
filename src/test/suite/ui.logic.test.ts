@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { ResultsViewProvider } from '../../views/resultsView';
+import { MatchTreeItem, ResultsViewProvider, RunTreeItem } from '../../views/resultsView';
 import { RobinSearchApi } from '../../extension';
 
 suite('UI + logic', function () {
@@ -44,6 +44,14 @@ suite('UI + logic', function () {
 		const provider = new ResultsViewProvider(api.results);
 		const root = (await Promise.resolve(provider.getChildren(undefined))) as any[];
 		assert.ok(root.length >= 1);
+
+		const firstRun = root[0];
+		assert.ok(firstRun instanceof RunTreeItem);
+		const children = (await Promise.resolve(provider.getChildren(firstRun))) as any[];
+		// Default behavior: no 2nd-level scope grouping; matches are direct children of the run.
+		assert.ok(children.length >= 1);
+		assert.ok(children[0] instanceof MatchTreeItem);
+
 		provider.dispose();
 	});
 });

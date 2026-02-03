@@ -249,6 +249,11 @@
           "default": false,
           "description": "Show workspace root information in the Side Bar UI."
         },
+        "robinSearch.showResultsScopeGroups": {
+          "type": "boolean",
+          "default": false,
+          "description": "Group results by scope (2nd level) in the Results tree."
+        },
         "robinSearch.sidebarFileMaxLines": {
           "type": "number",
           "default": 4000,

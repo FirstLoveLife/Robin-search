@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { ResultsStore, SearchMatch, SearchRun, SearchRunSet } from '../services/resultsStore';
+import { getRobinSearchConfig } from '../services/config';
 
 export type ResultsTreeElement = RunTreeItem | SetTreeItem | MatchTreeItem;
 
@@ -60,7 +61,18 @@ export class ResultsViewProvider implements vscode.TreeDataProvider<ResultsTreeE
 			return this.results.list().map((run) => new RunTreeItem(run));
 		}
 		if (element instanceof RunTreeItem) {
-			return element.run.sets.map((s) => new SetTreeItem(element.run.runId, element.run, s));
+			const config = getRobinSearchConfig();
+			if (config.showResultsScopeGroups) {
+				return element.run.sets.map((s) => new SetTreeItem(element.run.runId, element.run, s));
+			}
+			// Default: flatten the 2nd level scope grouping and show matches directly under the run.
+			const matches: MatchTreeItem[] = [];
+			for (const s of element.run.sets) {
+				for (const m of s.matches) {
+					matches.push(new MatchTreeItem(element.run.runId, element.run, s, m));
+				}
+			}
+			return matches;
 		}
 		if (element instanceof SetTreeItem) {
 			return element.set.matches.map((m) => new MatchTreeItem(element.runId, element.run, element.set, m));

@@ -63,6 +63,7 @@ Search `robinSearch` in Settings:
 - `robinSearch.showExcludeInput`: show the Excludes input in the Side Bar UI
 - `robinSearch.showIncludesInput`: show the Includes input in the Side Bar UI
 - `robinSearch.showScopeInfo`: show workspace root information in the Side Bar UI
+- `robinSearch.showResultsScopeGroups`: group results by scope in the Results tree
 - `robinSearch.sidebarFileMaxLines`: max lines rendered by the Side Bar file viewer (large files fall back to a window around the hit)
 
 ## Notes
