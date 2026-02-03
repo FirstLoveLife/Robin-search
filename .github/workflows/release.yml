@@ -43,21 +43,8 @@ jobs:
           set -euxo pipefail
           npm run package:vsix
 
-      - name: Create source archives
-        run: |
-          set -euxo pipefail
-          TAG="${{ github.event.release.tag_name }}"
-          NAME="robin-search-${TAG}"
-
-          git archive --format=zip --output "${NAME}.zip" HEAD
-          git archive --format=tar --output "${NAME}.tar" HEAD
-          gzip -f "${NAME}.tar"
-
-      - name: Upload release assets (VSIX + source)
+      - name: Upload release assets (VSIX)
         uses: softprops/action-gh-release@v2
         with:
           files: |
             robin-search.vsix
-            robin-search-${{ github.event.release.tag_name }}.zip
-            robin-search-${{ github.event.release.tag_name }}.tar.gz
-
