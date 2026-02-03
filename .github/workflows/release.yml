@@ -43,8 +43,17 @@ jobs:
           set -euxo pipefail
           npm run package:vsix
 
+      - name: Prepare versioned VSIX asset
+        shell: bash
+        run: |
+          set -euxo pipefail
+          TAG="${{ github.event.release.tag_name }}"
+          OUT="robin-search-${TAG}.vsix"
+          cp robin-search.vsix "${OUT}"
+          echo "VSIX_ASSET=${OUT}" >> "${GITHUB_ENV}"
+
       - name: Upload release assets (VSIX)
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            robin-search.vsix
+            ${{ env.VSIX_ASSET }}

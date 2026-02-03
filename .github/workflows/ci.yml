@@ -44,13 +44,35 @@ jobs:
           set -euxo pipefail
           xvfb-run -a npm run test:vsix |& tee vsix-test.log
 
+      - name: Prepare versioned VSIX artifact
+        if: always()
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Default (fallback) artifact name.
+          echo "VSIX_ARTIFACT=robin-search.vsix" >> "${GITHUB_ENV}"
+
+          if [ ! -f robin-search.vsix ]; then
+            echo "robin-search.vsix not found; skipping rename"
+            exit 0
+          fi
+
+          VERSION="$(node -p "require('./package.json').version")"
+          REF="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          REF="${REF//\//-}"
+          SHA="${GITHUB_SHA::7}"
+
+          OUT="robin-search-${VERSION}-${REF}-${SHA}.vsix"
+          cp robin-search.vsix "${OUT}"
+          echo "VSIX_ARTIFACT=${OUT}" >> "${GITHUB_ENV}"
+
       - name: Upload artifacts (vsix + logs)
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: robin-search-artifacts
           path: |
-            robin-search.vsix
+            ${{ env.VSIX_ARTIFACT }}
             test.log
             vsix-package.log
             vsix-test.log
