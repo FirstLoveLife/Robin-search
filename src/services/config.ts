@@ -8,6 +8,8 @@ export interface RobinSearchConfig {
 	respectSearchExclude: boolean;
 	sidebarFileMaxLines: number;
 	showExcludeInput: boolean;
+	showScopeInfo: boolean;
+	showIncludesInput: boolean;
 }
 
 export function getRobinSearchConfig(): RobinSearchConfig {
@@ -20,5 +22,7 @@ export function getRobinSearchConfig(): RobinSearchConfig {
 		respectSearchExclude: config.get<boolean>('respectSearchExclude', true),
 		sidebarFileMaxLines: config.get<number>('sidebarFileMaxLines', 4000),
 		showExcludeInput: config.get<boolean>('showExcludeInput', false),
+		showScopeInfo: config.get<boolean>('showScopeInfo', false),
+		showIncludesInput: config.get<boolean>('showIncludesInput', false),
 	};
 }

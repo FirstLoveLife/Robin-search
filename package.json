@@ -239,6 +239,16 @@
           "default": false,
           "description": "Show the Excludes input in the Side Bar UI."
         },
+        "robinSearch.showIncludesInput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show the Includes input in the Side Bar UI."
+        },
+        "robinSearch.showScopeInfo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show workspace root information in the Side Bar UI."
+        },
         "robinSearch.sidebarFileMaxLines": {
           "type": "number",
           "default": 4000,

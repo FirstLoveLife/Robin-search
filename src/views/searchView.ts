@@ -212,7 +212,11 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 
 		const payload = {
 			workspace: { rootLabel, rootDetail },
-			ui: { showExcludeInput: config.showExcludeInput },
+			ui: {
+				showExcludeInput: config.showExcludeInput,
+				showScopeInfo: config.showScopeInfo,
+				showIncludesInput: config.showIncludesInput,
+			},
 			resultsCount,
 			defaults: {
 				includes: last.includes ?? '**/*',
@@ -402,25 +406,30 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
   </div>
 
   <div class="section">
-    <div class="h">Scope</div>
-    <div class="field">
-      <div class="label">Root</div>
-      <div id="rootLabel" class="readonly"></div>
-      <div id="rootDetail" class="hint"></div>
-    </div>
-    <div class="field">
-      <label class="check"><input id="respectExcludes" type="checkbox" /> <span>respect exclude settings</span></label>
-    </div>
-    <div class="field">
-      <label class="label" for="includes">Includes</label>
-      <input id="includes" type="text" placeholder="**/*" spellcheck="false" autocomplete="off" />
-    </div>
-    <div class="field" id="excludesField">
-      <label class="label" for="excludes">Excludes</label>
-      <input id="excludes" type="text" placeholder="(optional)" spellcheck="false" autocomplete="off" />
-    </div>
-    <details id="advanced">
-      <summary>Advanced</summary>
+    <div class="h">Options</div>
+    <details id="options">
+      <summary>Search options</summary>
+
+      <div class="field" id="rootField">
+        <div class="label">Root</div>
+        <div id="rootLabel" class="readonly"></div>
+        <div id="rootDetail" class="hint"></div>
+      </div>
+
+      <div class="field" id="includesField">
+        <label class="label" for="includes">Includes</label>
+        <input id="includes" type="text" placeholder="**/*" spellcheck="false" autocomplete="off" />
+      </div>
+
+      <div class="field" id="excludesField">
+        <label class="label" for="excludes">Excludes</label>
+        <input id="excludes" type="text" placeholder="(optional)" spellcheck="false" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label class="check"><input id="respectExcludes" type="checkbox" /> <span>respect exclude settings</span></label>
+      </div>
+
       <div class="field">
         <label class="label" for="maxResults">Max results</label>
         <input id="maxResults" type="number" min="1" placeholder="20000" />
@@ -455,6 +464,8 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
     const state = {
       resultsCount: 0,
       showExcludeInput: false,
+      showIncludesInput: false,
+      showScopeInfo: false,
     };
 
     function setStatus(text) { el('statusText').textContent = text; }
@@ -501,11 +512,36 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
         isRegExp,
         isCaseSensitive: el('caseSensitive').checked,
         isWordMatch: el('wholeWord').checked,
-        includes: el('includes').value || '**/*',
+        includes: state.showIncludesInput ? (el('includes').value || '**/*') : '**/*',
         excludes: state.showExcludeInput ? (el('excludes').value || '') : '',
         respectExcludes: el('respectExcludes').checked,
         maxResults: Number.isFinite(maxResults) && maxResults > 0 ? maxResults : undefined,
       };
+    }
+
+    function setRootVisibility(show) {
+      state.showScopeInfo = !!show;
+      const field = el('rootField');
+      if (field) {
+        field.style.display = state.showScopeInfo ? '' : 'none';
+      }
+      if (!state.showScopeInfo) {
+        el('rootLabel').textContent = '';
+        el('rootDetail').textContent = '';
+      }
+    }
+
+    function setIncludesVisibility(show) {
+      state.showIncludesInput = !!show;
+      const field = el('includesField');
+      if (field) {
+        field.style.display = state.showIncludesInput ? '' : 'none';
+      }
+      if (!state.showIncludesInput) {
+        // Use default includes when hidden.
+        el('includes').value = '**/*';
+        dirty.delete('includes');
+      }
     }
 
     function setExcludeVisibility(show) {
@@ -528,6 +564,8 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
       const ws = payload.workspace || {};
       el('rootLabel').textContent = ws.rootLabel || '(workspace)';
       el('rootDetail').textContent = ws.rootDetail || '';
+      setRootVisibility(!!(payload.ui && payload.ui.showScopeInfo));
+      setIncludesVisibility(!!(payload.ui && payload.ui.showIncludesInput));
       setExcludeVisibility(!!(payload.ui && payload.ui.showExcludeInput));
 
       const d = payload.defaults || {};
@@ -540,7 +578,7 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
       }
       if (!dirty.has('caseSensitive')) el('caseSensitive').checked = !!d.isCaseSensitive;
       if (!dirty.has('wholeWord')) el('wholeWord').checked = !!d.isWordMatch;
-      if (!dirty.has('includes')) el('includes').value = d.includes || '**/*';
+      if (state.showIncludesInput && !dirty.has('includes')) el('includes').value = d.includes || '**/*';
       if (state.showExcludeInput && !dirty.has('excludes')) el('excludes').value = d.excludes || '';
       if (!dirty.has('respectExcludes')) el('respectExcludes').checked = !!d.respectExcludes;
       if (!dirty.has('maxResults')) el('maxResults').value = d.maxResults ? String(d.maxResults) : '';

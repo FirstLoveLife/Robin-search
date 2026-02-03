@@ -61,6 +61,8 @@ Search `robinSearch` in Settings:
 - `robinSearch.previewMaxChars`: max preview characters shown in `Results`
 - `robinSearch.respectSearchExclude`: respect `search.exclude` / `files.exclude`
 - `robinSearch.showExcludeInput`: show the Excludes input in the Side Bar UI
+- `robinSearch.showIncludesInput`: show the Includes input in the Side Bar UI
+- `robinSearch.showScopeInfo`: show workspace root information in the Side Bar UI
 - `robinSearch.sidebarFileMaxLines`: max lines rendered by the Side Bar file viewer (large files fall back to a window around the hit)
 
 ## Notes
