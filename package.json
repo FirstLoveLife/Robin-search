@@ -2,7 +2,7 @@
   "name": "robin-search",
   "displayName": "Robin-search",
   "description": "Self-contained Side Bar search results for VS Code.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "firstlove",
   "engines": {
     "vscode": "^1.106.0"
