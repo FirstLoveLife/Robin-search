@@ -234,6 +234,11 @@
           "default": true,
           "description": "Respect VS Code ignore/exclude settings (best-effort)."
         },
+        "robinSearch.showExcludeInput": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show the Excludes input in the Side Bar UI."
+        },
         "robinSearch.sidebarFileMaxLines": {
           "type": "number",
           "default": 4000,

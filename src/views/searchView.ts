@@ -27,10 +27,6 @@ function safeBool(value: unknown, fallback = false): boolean {
 	return typeof value === 'boolean' ? value : fallback;
 }
 
-function collectWorkspaceFolders(): Array<{ name: string; uri: string }> {
-	return (vscode.workspace.workspaceFolders ?? []).map((f) => ({ name: f.name, uri: f.uri.toString() }));
-}
-
 export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
 	private view: vscode.WebviewView | undefined;
 	private activeSearch: vscode.CancellationTokenSource | undefined;
@@ -136,9 +132,10 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 			isRegExp: safeBool(payload?.isRegExp),
 			isCaseSensitive: safeBool(payload?.isCaseSensitive),
 			isWordMatch: safeBool(payload?.isWordMatch),
-			rootName: safeString(payload?.rootId, ''),
+			// UI defaults to workspace root; still accept explicit rootName/rootId for compatibility.
+			rootName: safeString(payload?.rootName, safeString(payload?.rootId, '')),
 			includes: safeString(payload?.includes, '**/*'),
-			excludes: safeString(payload?.excludes, ''),
+			excludes: config.showExcludeInput ? safeString(payload?.excludes, '') : '',
 			respectExcludes: safeBool(payload?.respectExcludes, config.respectSearchExclude),
 			maxResults: typeof payload?.maxResults === 'number' ? payload.maxResults : undefined,
 		};
@@ -202,18 +199,31 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 		const last = this.uiState.getLastFormState();
 		const resultsCount = this.results.list().length;
 
+		const folders = vscode.workspace.workspaceFolders ?? [];
+		let rootLabel = '(no workspace)';
+		let rootDetail = '';
+		if (folders.length === 1) {
+			rootLabel = folders[0].name;
+			rootDetail = folders[0].uri.fsPath;
+		} else if (folders.length > 1) {
+			rootLabel = `Workspace (${folders.length} folders)`;
+			rootDetail = folders.map((f) => f.name).join(', ');
+		}
+
 		const payload = {
-			workspaceFolders: collectWorkspaceFolders(),
+			workspace: { rootLabel, rootDetail },
+			ui: { showExcludeInput: config.showExcludeInput },
 			resultsCount,
 			defaults: {
 				includes: last.includes ?? '**/*',
-				excludes: last.excludes ?? '',
+				excludes: config.showExcludeInput ? (last.excludes ?? '') : '',
 				respectExcludes: last.respectExcludes ?? config.respectSearchExclude,
 				isRegExp: last.isRegExp ?? false,
 				isCaseSensitive: last.isCaseSensitive ?? false,
 				isWordMatch: last.isWordMatch ?? false,
 				pattern: last.pattern ?? '',
-				rootName: last.rootName ?? '',
+				// UI always searches the workspace root, so we no longer expose rootName in the form.
+				rootName: '',
 				maxResults: last.maxResults ?? config.maxResults,
 			},
 		};
@@ -259,12 +269,31 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
       color: var(--vscode-sideBar-foreground);
       background: var(--vscode-sideBar-background);
     }
-    .section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--vscode-sideBarSectionHeader-border, transparent); }
-    .section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
-    .h { margin: 0 0 8px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vscode-sideBarSectionHeader-foreground); }
+    .section {
+      margin: 0 0 12px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--vscode-editorWidget-border);
+      background: var(--vscode-editorWidget-background);
+    }
+    .section:last-of-type { margin-bottom: 0; }
+    .h { margin: 0 0 10px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vscode-sideBarSectionHeader-foreground); }
     .field { margin: 8px 0; }
     .label { display: block; margin: 0 0 6px; font-weight: 600; color: var(--vscode-foreground); }
     .hint { margin-top: 4px; font-size: 11px; color: var(--vscode-descriptionForeground); }
+    .readonly {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--vscode-input-border, transparent);
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
+      font: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      user-select: text;
+    }
 
     input[type="text"], input[type="number"], select {
       width: 100%;
@@ -283,8 +312,6 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 
     .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .row > * { flex: 1; min-width: 120px; }
-    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
-    @media (max-width: 320px) { .grid2 { grid-template-columns: 1fr; } }
 
     .checkRow { display: flex; gap: 12px; flex-wrap: wrap; }
     .check { display: inline-flex; gap: 6px; align-items: center; color: var(--vscode-foreground); }
@@ -328,6 +355,17 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
     .statusRow { display: grid; grid-template-columns: 64px 1fr; gap: 8px; margin: 2px 0; }
     .statusLabel { color: var(--vscode-descriptionForeground); }
     .statusValue { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    details { margin-top: 10px; }
+    summary {
+      cursor: pointer;
+      color: var(--vscode-foreground);
+      font-weight: 600;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: '▸'; display: inline-block; width: 1em; }
+    details[open] summary::before { content: '▾'; }
   </style>
 </head>
 <body>
@@ -365,26 +403,30 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 
   <div class="section">
     <div class="h">Scope</div>
-    <div class="grid2">
-      <div>
-        <label class="label" for="root">Root</label>
-        <select id="root"></select>
-      </div>
+    <div class="field">
+      <div class="label">Root</div>
+      <div id="rootLabel" class="readonly"></div>
+      <div id="rootDetail" class="hint"></div>
+    </div>
+    <div class="field">
       <label class="check"><input id="respectExcludes" type="checkbox" /> <span>respect exclude settings</span></label>
     </div>
     <div class="field">
       <label class="label" for="includes">Includes</label>
       <input id="includes" type="text" placeholder="**/*" spellcheck="false" autocomplete="off" />
     </div>
-    <div class="field">
+    <div class="field" id="excludesField">
       <label class="label" for="excludes">Excludes</label>
       <input id="excludes" type="text" placeholder="(optional)" spellcheck="false" autocomplete="off" />
     </div>
-    <div class="field">
-      <label class="label" for="maxResults">Max results</label>
-      <input id="maxResults" type="number" min="1" placeholder="20000" />
-      <div class="hint">Stops after collecting this many matches.</div>
-    </div>
+    <details id="advanced">
+      <summary>Advanced</summary>
+      <div class="field">
+        <label class="label" for="maxResults">Max results</label>
+        <input id="maxResults" type="number" min="1" placeholder="20000" />
+        <div class="hint">Stops after collecting this many matches.</div>
+      </div>
+    </details>
   </div>
 
   <div class="section">
@@ -412,6 +454,7 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
 
     const state = {
       resultsCount: 0,
+      showExcludeInput: false,
     };
 
     function setStatus(text) { el('statusText').textContent = text; }
@@ -450,7 +493,6 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
     function collectPayload() {
       const mode = readMode();
       const isRegExp = mode === 'regex';
-      const rootId = el('root').value || '';
       const maxResultsRaw = el('maxResults').value;
       const maxResults = maxResultsRaw ? Number(maxResultsRaw) : undefined;
 
@@ -459,31 +501,34 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
         isRegExp,
         isCaseSensitive: el('caseSensitive').checked,
         isWordMatch: el('wholeWord').checked,
-        rootId: rootId || undefined,
         includes: el('includes').value || '**/*',
-        excludes: el('excludes').value || '',
+        excludes: state.showExcludeInput ? (el('excludes').value || '') : '',
         respectExcludes: el('respectExcludes').checked,
         maxResults: Number.isFinite(maxResults) && maxResults > 0 ? maxResults : undefined,
       };
+    }
+
+    function setExcludeVisibility(show) {
+      state.showExcludeInput = !!show;
+      const field = el('excludesField');
+      if (field) {
+        field.style.display = state.showExcludeInput ? '' : 'none';
+      }
+      if (!state.showExcludeInput) {
+        // If Excludes is hidden, do not keep applying stale values.
+        el('excludes').value = '';
+        dirty.delete('excludes');
+      }
     }
 
     function applyInit(payload) {
       state.resultsCount = payload.resultsCount || 0;
       setResults(String(state.resultsCount) + ' runs');
 
-      const folders = payload.workspaceFolders || [];
-      const root = el('root');
-      root.innerHTML = '';
-      const optAll = document.createElement('option');
-      optAll.value = '';
-      optAll.textContent = '(all folders)';
-      root.appendChild(optAll);
-      for (const f of folders) {
-        const o = document.createElement('option');
-        o.value = f.name;
-        o.textContent = f.name;
-        root.appendChild(o);
-      }
+      const ws = payload.workspace || {};
+      el('rootLabel').textContent = ws.rootLabel || '(workspace)';
+      el('rootDetail').textContent = ws.rootDetail || '';
+      setExcludeVisibility(!!(payload.ui && payload.ui.showExcludeInput));
 
       const d = payload.defaults || {};
       if (!dirty.has('pattern')) el('pattern').value = d.pattern || '';
@@ -496,10 +541,9 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
       if (!dirty.has('caseSensitive')) el('caseSensitive').checked = !!d.isCaseSensitive;
       if (!dirty.has('wholeWord')) el('wholeWord').checked = !!d.isWordMatch;
       if (!dirty.has('includes')) el('includes').value = d.includes || '**/*';
-      if (!dirty.has('excludes')) el('excludes').value = d.excludes || '';
+      if (state.showExcludeInput && !dirty.has('excludes')) el('excludes').value = d.excludes || '';
       if (!dirty.has('respectExcludes')) el('respectExcludes').checked = !!d.respectExcludes;
       if (!dirty.has('maxResults')) el('maxResults').value = d.maxResults ? String(d.maxResults) : '';
-      if (!dirty.has('root')) el('root').value = d.rootName || '';
       setRunning(false);
     }
 
@@ -510,7 +554,7 @@ export class SearchWebviewViewProvider implements vscode.WebviewViewProvider, vs
         setRunning(isRunning);
       });
     }
-    for (const id of ['caseSensitive', 'wholeWord', 'respectExcludes', 'root']) {
+    for (const id of ['caseSensitive', 'wholeWord', 'respectExcludes']) {
       el(id).addEventListener('change', () => dirty.add(id));
     }
     for (const n of document.querySelectorAll('input[name="mode"]')) {

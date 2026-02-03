@@ -7,6 +7,7 @@ export interface RobinSearchConfig {
 	previewMaxChars: number;
 	respectSearchExclude: boolean;
 	sidebarFileMaxLines: number;
+	showExcludeInput: boolean;
 }
 
 export function getRobinSearchConfig(): RobinSearchConfig {
@@ -18,5 +19,6 @@ export function getRobinSearchConfig(): RobinSearchConfig {
 		previewMaxChars: config.get<number>('previewMaxChars', 240),
 		respectSearchExclude: config.get<boolean>('respectSearchExclude', true),
 		sidebarFileMaxLines: config.get<number>('sidebarFileMaxLines', 4000),
+		showExcludeInput: config.get<boolean>('showExcludeInput', false),
 	};
 }

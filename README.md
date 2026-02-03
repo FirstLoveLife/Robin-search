@@ -60,6 +60,7 @@ Search `robinSearch` in Settings:
 - `robinSearch.maxFileSizeKB`: skip files larger than this size (best-effort)
 - `robinSearch.previewMaxChars`: max preview characters shown in `Results`
 - `robinSearch.respectSearchExclude`: respect `search.exclude` / `files.exclude`
+- `robinSearch.showExcludeInput`: show the Excludes input in the Side Bar UI
 - `robinSearch.sidebarFileMaxLines`: max lines rendered by the Side Bar file viewer (large files fall back to a window around the hit)
 
 ## Notes
